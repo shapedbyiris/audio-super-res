@@ -160,12 +160,12 @@ def add_data(h5_file, inputfiles, args, save_examples=False):
     data_set[...] = lr_patches
     label_set[...] = hr_patches
     print((len(ID_list)))
-    pickle.dump(ID_list, open('ID_list_patches_'+str(d)+'_'+str(args.scale), 'w'))
+    pickle.dump(ID_list, open('ID_list_patches_'+str(d)+'_'+str(args.scale), 'wb'))
   else:
     # pickle the data
-    pickle.dump(hr_patches, open('full-label-'+args.out[:-7],'w'))
-    pickle.dump(lr_patches, open('full-data-'+args.out[:-7],'w'))
-    pickle.dump(ID_list, open('ID_list','w'))
+    pickle.dump(hr_patches, open('full-label-'+args.out[:-7],'wb'))
+    pickle.dump(lr_patches, open('full-data-'+args.out[:-7],'wb'))
+    pickle.dump(ID_list, open('ID_list','wb'))
 
 
 
