@@ -5,7 +5,7 @@ Create an HDF5 file of patches for training super-resolution model.
 import os, argparse
 import numpy as np
 import h5py
-import cPickle
+import pickle
 
 import librosa
 from scipy import interpolate
@@ -83,9 +83,9 @@ def add_data(h5_file, inputfiles, args, save_examples=False):
         s, s_lr = args.stride, args.stride / args.scale
   hr_patches, lr_patches = list(), list()
 
-  print(len(file_list))
+  print((len(file_list)))
   for j, file_path in enumerate(file_list):
-    if j % 10 == 0: print '%d/%d' % (j, num_files)
+    if j % 10 == 0: print('%d/%d' % (j, num_files))
 
     ID = int(re.search('p\d\d\d/', file_path).group(0)[1:-1])
     
@@ -159,13 +159,13 @@ def add_data(h5_file, inputfiles, args, save_examples=False):
 
     data_set[...] = lr_patches
     label_set[...] = hr_patches
-    print(len(ID_list))
-    cPickle.dump(ID_list, open('ID_list_patches_'+str(d)+'_'+str(args.scale), 'w'))
+    print((len(ID_list)))
+    pickle.dump(ID_list, open('ID_list_patches_'+str(d)+'_'+str(args.scale), 'w'))
   else:
     # pickle the data
-    cPickle.dump(hr_patches, open('full-label-'+args.out[:-7],'w'))
-    cPickle.dump(lr_patches, open('full-data-'+args.out[:-7],'w'))
-    cPickle.dump(ID_list, open('ID_list','w'))
+    pickle.dump(hr_patches, open('full-label-'+args.out[:-7],'w'))
+    pickle.dump(lr_patches, open('full-data-'+args.out[:-7],'w'))
+    pickle.dump(ID_list, open('ID_list','w'))
 
 
 
