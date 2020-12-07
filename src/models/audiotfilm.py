@@ -13,7 +13,7 @@ from keras.layers.convolutional import Convolution1D, UpSampling1D, AtrousConvol
 from keras.layers import LSTM
 from keras.layers.normalization import BatchNormalization
 from keras.layers.advanced_activations import LeakyReLU
-from keras.initializations import normal, orthogonal
+from keras.initializers import normal, orthogonal
 
 # ----------------------------------------------------------------------------
 DRATE = 2
