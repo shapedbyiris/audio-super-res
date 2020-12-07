@@ -157,7 +157,7 @@ def normal_init(shape, dim_ordering='tf', name=None):
     return normal(shape, scale=1e-3, name=name, dim_ordering=dim_ordering)
 
 def orthogonal_init(shape, dim_ordering='tf', name=None):
-    return orthogonal(shape)
+    return orthogonal(shape) # https://github.com/kuleshov/audio-super-res/issues/11
 
 def spline_up(x_lr, r):
   x_lr = x_lr.flatten()
