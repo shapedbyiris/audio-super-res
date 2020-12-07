@@ -16,7 +16,7 @@ from keras.layers.convolutional import Convolution1D
 from keras.layers.normalization import BatchNormalization
 from keras.layers.advanced_activations import LeakyReLU
 from keras.layers import Dense
-from keras.initializations import normal
+from keras.initializers import normal
 
 # ----------------------------------------------------------------------------
 
