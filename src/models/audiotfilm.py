@@ -46,7 +46,7 @@ class AudioTfilm(Model):
       def _make_normalizer(x_in, n_filters, n_block):
         """applies an lstm layer on top of x_in"""        
         x_shape = tf.shape(x_in)
-        n_steps = x_shape[1] / n_block # will be 32 at training
+        n_steps = tf.cast(x_shape[1], tf.float32) / n_block # will be 32 at training
 
         # first, apply standard conv layer to reduce the dimension
         # input of (-1, 4096, 128) becomes (-1, 32, 128)
