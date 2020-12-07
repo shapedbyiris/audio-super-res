@@ -23,8 +23,8 @@ class Model(object):
 
 		# create session
 		#self.sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
-		gpu_options = tf.GPUOptions(allow_growth=True)
-		self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True))
+		gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
+		self.sess = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True))
 		K.set_session(self.sess) # pass keras the session
 		
 		# save params
@@ -35,25 +35,25 @@ class Model(object):
 			pass # we will instead load the graph from a checkpoint
 		else:
 			# create input vars
-			X = tf.placeholder(tf.float32, shape=(None, None, 1), name='X')
-			Y = tf.placeholder(tf.float32, shape=(None, None, 1), name='Y')
-			alpha = tf.placeholder(tf.float32, shape=(), name='alpha') # weight multiplier
+			X = tf.compat.v1.placeholder(tf.float32, shape=(None, None, 1), name='X')
+			Y = tf.compat.v1.placeholder(tf.float32, shape=(None, None, 1), name='Y')
+			alpha = tf.compat.v1.placeholder(tf.float32, shape=(), name='alpha') # weight multiplier
 			# save inputs
 			self.inputs = (X, Y, alpha)
-			tf.add_to_collection('inputs', X)
-			tf.add_to_collection('inputs', Y)
-			tf.add_to_collection('inputs', alpha)
+			tf.compat.v1.add_to_collection('inputs', X)
+			tf.compat.v1.add_to_collection('inputs', Y)
+			tf.compat.v1.add_to_collection('inputs', alpha)
 
 			# create model outputs
 			self.predictions = self.create_model(n_dim, r)
-			tf.add_to_collection('preds', self.predictions) 
+			tf.compat.v1.add_to_collection('preds', self.predictions) 
 			# init the model
-			init = tf.global_variables_initializer()
+			init = tf.compat.v1.global_variables_initializer()
 			self.sess.run(init)
 
 			# create training updates
 			self.train_op = self.create_train_op(X, Y, alpha)
-			tf.add_to_collection('train_op', self.train_op)
+			tf.compat.v1.add_to_collection('train_op', self.train_op)
 		# logging
 		lr_str = '.' + 'lr%f' % opt_params['lr']
 		g_str  = '.g%d' % self.layers
@@ -91,14 +91,14 @@ class Model(object):
 		grads = self.create_gradients(self.loss, params)
 
 		# create training op
-		with tf.name_scope('optimizer'):
+		with tf.compat.v1.name_scope('optimizer'):
 			train_op = self.create_updates(params, grads, alpha, opt_params)
 
 		# initialize the optimizer variabLes
-		optimizer_vars = [ v for v in tf.global_variables() if 'optimizer/' in v.name
+		optimizer_vars = [ v for v in tf.compat.v1.global_variables() if 'optimizer/' in v.name
 																												or 'Adam' in v.name ]
 		#init = tf.variables_initializer(optimizer_vars)
-		init = tf.initialize_all_variables()
+		init = tf.compat.v1.initialize_all_variables()
 		self.sess.run(init)
 
 		return train_op
@@ -111,37 +111,37 @@ class Model(object):
 		P = self.predictions
 
 		# compute l2 loss
-		sqrt_l2_loss = tf.sqrt(tf.reduce_mean((P-Y)**2 + 1e-6, axis=[1,2]))
-		sqrn_l2_norm = tf.sqrt(tf.reduce_mean(Y**2, axis=[1,2]))
-		snr = 20 * tf.log(sqrn_l2_norm / sqrt_l2_loss + 1e-8) / tf.log(10.)
+		sqrt_l2_loss = tf.sqrt(tf.reduce_mean(input_tensor=(P-Y)**2 + 1e-6, axis=[1,2]))
+		sqrn_l2_norm = tf.sqrt(tf.reduce_mean(input_tensor=Y**2, axis=[1,2]))
+		snr = 20 * tf.math.log(sqrn_l2_norm / sqrt_l2_loss + 1e-8) / tf.math.log(10.)
 
-		avg_sqrt_l2_loss = tf.reduce_mean(sqrt_l2_loss, axis=0)
-		avg_snr = tf.reduce_mean(snr, axis=0)
+		avg_sqrt_l2_loss = tf.reduce_mean(input_tensor=sqrt_l2_loss, axis=0)
+		avg_snr = tf.reduce_mean(input_tensor=snr, axis=0)
 
 		# track losses
-		tf.summary.scalar('l2_loss', avg_sqrt_l2_loss)
-		tf.summary.scalar('snr', avg_snr)
+		tf.compat.v1.summary.scalar('l2_loss', avg_sqrt_l2_loss)
+		tf.compat.v1.summary.scalar('snr', avg_snr)
 
 		# save losses into collection
-		tf.add_to_collection('losses', avg_sqrt_l2_loss)
-		tf.add_to_collection('losses', avg_snr)
+		tf.compat.v1.add_to_collection('losses', avg_sqrt_l2_loss)
+		tf.compat.v1.add_to_collection('losses', avg_snr)
 
 		# save predicted and real outputs to collection
 		y_flat = tf.reshape(Y, [-1]) 
 		p_flat = tf.reshape(P, [-1])
-		tf.add_to_collection('hrs', y_flat)
-		tf.add_to_collection('hrs', p_flat)
+		tf.compat.v1.add_to_collection('hrs', y_flat)
+		tf.compat.v1.add_to_collection('hrs', p_flat)
 
 		return avg_sqrt_l2_loss
 
 	def get_params(self):
-		return [ v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+		return [ v for v in tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES)
 						 if 'soundnet' not in v.name ]
 
 	def create_optimzier(self, opt_params):
 		if opt_params['alg'] == 'adam':
 			lr, b1, b2 = opt_params['lr'], opt_params['b1'], opt_params['b2']
-			optimizer = tf.train.AdamOptimizer(lr, b1, b2)
+			optimizer = tf.compat.v1.train.AdamOptimizer(lr, b1, b2)
 		else:
 			raise ValueError('Invalid optimizer: ' + opt_params['alg'])
 
@@ -172,24 +172,24 @@ class Model(object):
 		meta = checkpoint + '.meta'
 
 		# load graph
-		self.saver = tf.train.import_meta_graph(meta)
-		g = tf.get_default_graph()
+		self.saver = tf.compat.v1.train.import_meta_graph(meta)
+		g = tf.compat.v1.get_default_graph()
 
 		# load weights
 		self.saver.restore(self.sess, checkpoint)
 
 		# get graph tensors
-		X, Y, alpha = tf.get_collection('inputs')
+		X, Y, alpha = tf.compat.v1.get_collection('inputs')
 
 		# save tensors as instance variables
 		self.inputs = X, Y, alpha
-		self.predictions = tf.get_collection('preds')[0]
+		self.predictions = tf.compat.v1.get_collection('preds')[0]
 
 		# load existing loss, or erase it, if creating new one
 		g.clear_collection('losses')
 
 		# or, get existing train op:
-		self.train_op = tf.get_collection('train_op')
+		self.train_op = tf.compat.v1.get_collection('train_op')
 
 	def calc_snr(self, Y, Pred):
 		sqrt_l2_loss = np.sqrt(np.mean((Pred-Y)**2+1e-6, axis=(0, 1)))
@@ -206,18 +206,18 @@ class Model(object):
 
 	def fit(self, X_train, Y_train, X_val, Y_val, n_epoch=100, r=4, speaker="single", grocery="false", piano="false", calc_full_snr=False):      
 		# initialize log directory                  
-		if tf.gfile.Exists(self.logdir): tf.gfile.DeleteRecursively(self.logdir)
-		tf.gfile.MakeDirs(self.logdir)
+		if tf.io.gfile.exists(self.logdir): tf.io.gfile.rmtree(self.logdir)
+		tf.io.gfile.makedirs(self.logdir)
 
 		# load some training params
 		n_batch = self.opt_params['batch_size']
 
 		# create saver
-		self.saver = tf.train.Saver()
+		self.saver = tf.compat.v1.train.Saver()
 
 		# summarization
-		summary = tf.summary.merge_all()
-		summary_writer = tf.summary.FileWriter(self.logdir, self.sess.graph)
+		summary = tf.compat.v1.summary.merge_all()
+		summary_writer = tf.compat.v1.summary.FileWriter(self.logdir, self.sess.graph)
 
 		# load data into DataSet
 		train_data = DataSet(X_train, Y_train)
@@ -261,7 +261,7 @@ class Model(object):
 					va_l2_loss, va_l2_snr, va_lsd))
 
 				# compute summaries for overall loss
-				objectives_summary = tf.Summary()
+				objectives_summary = tf.compat.v1.Summary()
 				objectives_summary.value.add(tag='tr_l2_loss', simple_value=tr_l2_loss)
 				objectives_summary.value.add(tag='tr_l2_snr', simple_value=tr_l2_snr)
 				objectives_summary.value.add(tag='va_l2_snr', simple_value=va_l2_snr)
@@ -322,7 +322,7 @@ class Model(object):
 		else:
 			feed_dict = {X_in : X, alpha_in : alpha}
 		# this is ugly, but only way I found to get this var after model reload
-		g = tf.get_default_graph()
+		g = tf.compat.v1.get_default_graph()
 		k_tensors = [n for n in g.as_graph_def().node if 'keras_learning_phase' in n.name]
 		assert len(k_tensors) <= 1
 		if k_tensors: 
@@ -333,8 +333,8 @@ class Model(object):
 
 	def eval_err(self, X, Y, n_batch=128):
 		batch_iterator = iterate_minibatches(X, Y, n_batch, shuffle=True)
-		l2_loss_op, l2_snr_op = tf.get_collection('losses')
-		y_flat, p_flat = tf.get_collection('hrs')
+		l2_loss_op, l2_snr_op = tf.compat.v1.get_collection('losses')
+		y_flat, p_flat = tf.compat.v1.get_collection('hrs')
 
 		l2_loss, snr = 0, 0
 		tot_l2_loss, tot_snr = 0, 0
@@ -381,7 +381,7 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
 
 def count_parameters():
 		total_parameters = 0
-		for variable in tf.trainable_variables():
+		for variable in tf.compat.v1.trainable_variables():
 				shape = variable.get_shape()
 				var_params = 1
 				for dim in shape:

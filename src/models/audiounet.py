@@ -31,7 +31,7 @@ class AudioUNet(Model):
     X, _, _ = self.inputs
     K.set_session(self.sess)
 
-    with tf.name_scope('generator'):
+    with tf.compat.v1.name_scope('generator'):
       x = X
       L = self.layers
       # dim/layer: 4096, 2048, 1024, 512, 256, 128,  64,  32,
@@ -43,7 +43,7 @@ class AudioUNet(Model):
 
       # downsampling layers
       for l, nf, fs in zip(list(range(L)), n_filters, n_filtersizes):
-        with tf.name_scope('downsc_conv%d' % l):
+        with tf.compat.v1.name_scope('downsc_conv%d' % l):
           x = (Convolution1D(nb_filter=nf, filter_length=fs, 
                   activation=None, border_mode='same', init=orthogonal_init,
                   subsample_length=2))(x)
@@ -53,7 +53,7 @@ class AudioUNet(Model):
           downsampling_l.append(x)
 
       # bottleneck layer
-      with tf.name_scope('bottleneck_conv'):
+      with tf.compat.v1.name_scope('bottleneck_conv'):
           x = (Convolution1D(nb_filter=n_filters[-1], filter_length=n_filtersizes[-1], 
                   activation=None, border_mode='same', init=orthogonal_init,
                   subsample_length=2))(x)
@@ -62,7 +62,7 @@ class AudioUNet(Model):
 
       # upsampling layers
       for l, nf, fs, l_in in reversed(list(zip(list(range(L)), n_filters, n_filtersizes, downsampling_l))):
-        with tf.name_scope('upsc_conv%d' % l):
+        with tf.compat.v1.name_scope('upsc_conv%d' % l):
           # (-1, n/2, 2f)
           x = (Convolution1D(nb_filter=2*nf, filter_length=fs, 
                   activation=None, border_mode='same', init=orthogonal_init))(x)
@@ -75,7 +75,7 @@ class AudioUNet(Model):
           print(('U-Block: ', x.get_shape()))
 
       # final conv layer
-      with tf.name_scope('lastconv'):
+      with tf.compat.v1.name_scope('lastconv'):
         x = Convolution1D(nb_filter=2, filter_length=9, 
                 activation=None, border_mode='same', init=normal_init)(x)    
         x = SubPixel1D(x, r=2) 

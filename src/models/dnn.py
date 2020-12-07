@@ -35,17 +35,17 @@ class DNN(Model):
     X, _, _ = self.inputs
     K.set_session(self.sess)
 
-    with tf.name_scope('generator'):
+    with tf.compat.v1.name_scope('generator'):
       x = X
       
       L = self.layers
-      init_x_shape = tf.shape(x)
+      init_x_shape = tf.shape(input=x)
       
       x = tf.reshape(x, [-1, n_dim])
       
       for l in range(L):
         x_start = x
-        x_shape = tf.shape(x)
+        x_shape = tf.shape(input=x)
         if(l == L-1):
             out_units = n_dim
         else:
@@ -64,10 +64,10 @@ class DNN(Model):
         
         #x = Dense(units=out_units, input_shape=(in_shape,), init=normal_init)(x)
         x = Dense(out_units, init=normal_init ,input_dim=(in_shape,))(x)
-        x_shape = tf.shape(x)
+        x_shape = tf.shape(input=x)
         x = BatchNormalization()(x)
         x = LeakyReLU(0.2)(x)
-        if(x_shape == tf.shape(x_start)):
+        if(x_shape == tf.shape(input=x_start)):
             x = tf.add(x, x_start)
       
       x = tf.reshape(x, shape=(init_x_shape[0], init_x_shape[1], 1))

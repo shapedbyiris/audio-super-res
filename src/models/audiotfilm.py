@@ -33,7 +33,7 @@ class AudioTfilm(Model):
     X, _, _ = self.inputs
     K.set_session(self.sess)
 
-    with tf.name_scope('generator'):
+    with tf.compat.v1.name_scope('generator'):
       x = X
       L = self.layers
       n_filters = [  128,  256,  512, 512, 512, 512, 512, 512]
@@ -45,7 +45,7 @@ class AudioTfilm(Model):
 
       def _make_normalizer(x_in, n_filters, n_block):
         """applies an lstm layer on top of x_in"""        
-        x_shape = tf.shape(x_in)
+        x_shape = tf.shape(input=x_in)
         n_steps = tf.cast(x_shape[1], tf.float32) / n_block # will be 32 at training
 
         # first, apply standard conv layer to reduce the dimension
@@ -55,7 +55,7 @@ class AudioTfilm(Model):
         x_in_down = (MaxPooling1D(pool_length=n_block, border_mode='valid'))(x_in)
          
         # pooling to reduce dimension 
-        x_shape = tf.shape(x_in_down)
+        x_shape = tf.shape(input=x_in_down)
         
         x_rnn = LSTM(output_dim = n_filters, return_sequences = True)(x_in_down)
         
@@ -63,7 +63,7 @@ class AudioTfilm(Model):
         return x_rnn
 
       def _apply_normalizer(x_in, x_norm, n_filters, n_block):
-        x_shape = tf.shape(x_in)
+        x_shape = tf.shape(input=x_in)
         n_steps = x_shape[1] / n_block # will be 32 at training
 
         # reshape input into blocks
@@ -81,7 +81,7 @@ class AudioTfilm(Model):
 
       # downsampling layers
       for l, nf, fs in zip(list(range(L)), n_filters, n_filtersizes):
-        with tf.name_scope('downsc_conv%d' % l):
+        with tf.compat.v1.name_scope('downsc_conv%d' % l):
           x = (AtrousConvolution1D(nb_filter=nf, filter_length=fs, atrous_rate = DRATE,
                   activation=None, border_mode='same', init=orthogonal_init,
                   subsample_length=1))(x)
@@ -91,9 +91,9 @@ class AudioTfilm(Model):
           # create and apply the normalizer
           nb = 128 / (2**l)
         
-          params_before = np.sum([np.prod(v.get_shape().as_list()) for v in tf.trainable_variables()]) 
+          params_before = np.sum([np.prod(v.get_shape().as_list()) for v in tf.compat.v1.trainable_variables()]) 
           x_norm = _make_normalizer(x, nf, nb)
-          params_after = np.sum([np.prod(v.get_shape().as_list()) for v in tf.trainable_variables()]) 
+          params_after = np.sum([np.prod(v.get_shape().as_list()) for v in tf.compat.v1.trainable_variables()]) 
        
           x = _apply_normalizer(x, x_norm, nf, nb)
 
@@ -101,7 +101,7 @@ class AudioTfilm(Model):
           downsampling_l.append(x)
 
       # bottleneck layer
-      with tf.name_scope('bottleneck_conv'):
+      with tf.compat.v1.name_scope('bottleneck_conv'):
           x = (AtrousConvolution1D(nb_filter=n_filters[-1], filter_length=n_filtersizes[-1], atrous_rate = DRATE,
                   activation=None, border_mode='same', init=orthogonal_init,
                   subsample_length=1))(x)
@@ -116,7 +116,7 @@ class AudioTfilm(Model):
 
       # upsampling layers
       for l, nf, fs, l_in in reversed(list(zip(list(range(L)), n_filters, n_filtersizes, downsampling_l))):
-        with tf.name_scope('upsc_conv%d' % l):
+        with tf.compat.v1.name_scope('upsc_conv%d' % l):
           # (-1, n/2, 2f)
           x = (AtrousConvolution1D(nb_filter=2*nf, filter_length=fs, atrous_rate = DRATE,
                   activation=None, border_mode='same', init=orthogonal_init))(x)
@@ -134,7 +134,7 @@ class AudioTfilm(Model):
           print('U-Block: ', x.get_shape())
       
       # final conv layer
-      with tf.name_scope('lastconv'):
+      with tf.compat.v1.name_scope('lastconv'):
         x = Convolution1D(nb_filter=2, filter_length=9, 
                 activation=None, border_mode='same', init=normal_init)(x)    
         x = SubPixel1D(x, r=2) 

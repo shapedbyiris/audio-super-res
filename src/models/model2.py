@@ -24,8 +24,8 @@ class Model2(object):
 
   def __init__(self, r=2, opt_params=default_opt):
 
-    gpu_options = tf.GPUOptions(allow_growth=True)
-    self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True))
+    gpu_options = tf.compat.v1.GPUOptions(allow_growth=True)
+    self.sess = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(gpu_options=gpu_options, allow_soft_placement=True))
     K.set_session(self.sess) # pass keras the session
     
     # save params
@@ -62,13 +62,13 @@ class Model2(object):
     grads = self.create_gradients(self.loss, params)
 
     # create training op
-    with tf.name_scope('optimizer'):
+    with tf.compat.v1.name_scope('optimizer'):
       train_op = self.create_updates(params, grads, alpha, opt_params)
 
     # initialize the optimizer variabLes
-    optimizer_vars = [ v for v in tf.global_variables() if 'optimizer/' in v.name
+    optimizer_vars = [ v for v in tf.compat.v1.global_variables() if 'optimizer/' in v.name
                                                         or 'Adam' in v.name ]
-    init = tf.variables_initializer(optimizer_vars)
+    init = tf.compat.v1.variables_initializer(optimizer_vars)
     self.sess.run(init)
 
     return train_op
@@ -77,13 +77,13 @@ class Model2(object):
     raise NotImplementedError()
 
   def get_params(self):
-    return [ v for v in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+    return [ v for v in tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.TRAINABLE_VARIABLES)
              if 'soundnet' not in v.name ]
 
   def create_optimzier(self, opt_params):
     if opt_params['alg'] == 'adam':
       lr, b1, b2 = opt_params['lr'], opt_params['b1'], opt_params['b2']
-      optimizer = tf.train.AdamOptimizer(lr, b1, b2)
+      optimizer = tf.compat.v1.train.AdamOptimizer(lr, b1, b2)
     else:
       raise ValueError('Invalid optimizer: ' + opt_params['alg'])
 
@@ -224,7 +224,7 @@ def iterate_minibatches(inputs, targets, batchsize, shuffle=False):
 
 def count_parameters():
     total_parameters = 0
-    for variable in tf.trainable_variables():
+    for variable in tf.compat.v1.trainable_variables():
         shape = variable.get_shape()
         var_params = 1
         for dim in shape:
