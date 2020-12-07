@@ -1,7 +1,6 @@
 import tensorflow as tf
 
-from tensorflow.contrib.rnn import RNNCell
-from tensorflow.contrib.layers.python.layers import layers
+from tf.compat.v1.nn.rnn_cell.RNNCell import RNNCell
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import op_def_registry
 from tensorflow.python.framework import ops

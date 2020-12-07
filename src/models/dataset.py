@@ -5,7 +5,6 @@ This is stolen from the tensorflow tutorial
 
 import numpy
 
-from tensorflow.contrib.learn.python.learn.datasets import base
 from tensorflow.python.framework import dtypes
 
 # ----------------------------------------------------------------------------
@@ -23,7 +22,7 @@ class DataSet(object):
     `uint8` to leave the input as `[0, 255]`, or `float32` to rescale into
     `[0, 1]`.
     """
-    dtype = dtypes.as_dtype(dtype).base_dtype
+    dtype = dtypes.float32
     if dtype not in (dtypes.uint8, dtypes.float32):
       raise TypeError('Invalid image dtype %r, expected uint8 or float32' %
                       dtype)
