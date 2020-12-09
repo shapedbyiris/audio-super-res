@@ -38,9 +38,9 @@ class Model(object):
 			# X = tf.compat.v1.placeholder(tf.float32, shape=(None, None, 1), name='X')
 			# Y = tf.compat.v1.placeholder(tf.float32, shape=(None, None, 1), name='Y')
 			# alpha = tf.compat.v1.placeholder(tf.float32, shape=(), name='alpha') # weight multiplier
-			X = tf.Variable(shape=(None, None, 1), dtype=tf.float32, name='X')
-			Y = tf.Variable(shape=(None, None, 1), dtype=tf.float32, name='Y')
-			alpha = tf.Variable(shape=(), dtype=tf.float32, name='alpha')
+			X = tf.Variable(tf.ones(shape=(None, None, 1)), dtype=tf.float32, name='X')
+			Y = tf.Variable(tf.ones(shape=(None, None, 1)), dtype=tf.float32, name='Y')
+			alpha = tf.Variable(tf.zeros(shape=()), dtype=tf.float32, name='alpha')
 			# save inputs
 			self.inputs = (X, Y, alpha)
 			tf.compat.v1.add_to_collection('inputs', X)
